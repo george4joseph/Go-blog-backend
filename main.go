@@ -14,6 +14,7 @@ func main() {
 	router := gin.Default()
 
 	routes.BlogRoutes(router)
+	routes.UserRoutes(router)
 	router.Run(":8000")
 
 }

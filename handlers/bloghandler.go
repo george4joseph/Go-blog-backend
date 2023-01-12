@@ -38,9 +38,11 @@ func CreateBlog(ctx *gin.Context) {
 		return
 	}
 
+	uid, _ := uuid.Parse(blog_item.User_id)
 	writeblog, err := config.ClientConfig.Blog.Create().
 		SetTitle(blog_item.Title).
 		SetContent(blog_item.Content).
+		SetUserID(uid).
 		Save(context.Background())
 
 	if err != nil {
