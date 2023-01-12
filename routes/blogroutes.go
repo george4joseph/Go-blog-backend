@@ -1,10 +1,9 @@
 package routes
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/george4joseph/go-blog-backend/handlers"
+	"github.com/gin-gonic/gin"
 )
-
 
 func BlogRoutes(router *gin.Engine) {
 

@@ -5,26 +5,23 @@ import (
 	"fmt"
 	"log"
 
-	"entgo.io/ent"
-   _ "github.com/lib/pq"
-
-   
-   
+	"github.com/george4joseph/go-blog-backend/ent"
+	_ "github.com/lib/pq"
 )
 
+var ClientConfig *ent.Client
 
-func NewEntClient() *ent.Client {
-//Open a connection to the database
-   Client, err := ent.Open("postgres","host=localhost port=5432 user=postgres dbname=postgresDB password=mysecretpassword sslmode=disable")
-   if err != nil {
-      log.Fatal(err)
-   }
+func NewEntClient() {
+	//Open a connection to the database
+	Client, err := ent.Open("postgres", "host=localhost port=5432 user=postgres dbname=blogdb password=mysecretpassword sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-   fmt.Println("Connected to database successfully")
-   defer Client.Close()
-// AutoMigration with ENT
-   if err := Client.Schema.Create(context.Background()); err != nil {
-      log.Fatalf("failed creating schema resources: %v", err)
-   }
-   return Client
+	fmt.Println("Connected to database successfully")
+	// AutoMigration with ENT
+	if err := Client.Schema.Create(context.Background()); err != nil {
+		log.Fatalf("failed creating schema resources: %v", err)
+	}
+	ClientConfig = Client
 }
