@@ -10,4 +10,5 @@ func BlogRoutes(router *gin.Engine) {
 	router.GET("/blogs", handlers.BlogGetAll)
 	router.POST("/blogs", handlers.CreateBlog)
 	router.PATCH("/blog/:id", handlers.UpdateBlog)
+	router.DELETE("/blog/:id", handlers.DeleteBlog)
 }

@@ -73,8 +73,8 @@ func UpdateBlog(ctx *gin.Context) {
 	}
 
 	editblog, err := config.ClientConfig.Blog.UpdateOneID(id_uuid).
-			SetContent(blog_update.Content).
-			Save(context.Background())
+		SetContent(blog_update.Content).
+		Save(context.Background())
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error:": err.Error})
@@ -85,6 +85,30 @@ func UpdateBlog(ctx *gin.Context) {
 			"status":  "ok",
 			"message": "success",
 			"data":    editblog,
+		})
+	}
+
+}
+
+func DeleteBlog(ctx *gin.Context) {
+	idParam := ctx.Params.ByName("id")
+	id_uuid, _ := uuid.Parse(idParam)
+	if idParam == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "missing id"})
+	}
+
+	err := config.ClientConfig.Blog.
+		DeleteOneID(id_uuid).
+		Exec(context.Background())
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error:": err.Error})
+		fmt.Println(err)
+		return
+	} else {
+		ctx.JSON(http.StatusOK, gin.H{
+			"status":  "ok",
+			"message": "Deletion-success",
 		})
 	}
 
