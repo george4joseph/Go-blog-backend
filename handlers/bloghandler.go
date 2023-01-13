@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/george4joseph/go-blog-backend/config"
+	"github.com/george4joseph/go-blog-backend/ent/blog"
 	"github.com/george4joseph/go-blog-backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -38,11 +39,12 @@ func CreateBlog(ctx *gin.Context) {
 		return
 	}
 
-	uid, _ := uuid.Parse(blog_item.User_id)
+	idParam := ctx.Params.ByName("id")
+	id_user, _ := uuid.Parse(idParam)
 	writeblog, err := config.ClientConfig.Blog.Create().
 		SetTitle(blog_item.Title).
 		SetContent(blog_item.Content).
-		SetUserID(uid).
+		SetUserID(id_user).
 		Save(context.Background())
 
 	if err != nil {
@@ -69,12 +71,13 @@ func UpdateBlog(ctx *gin.Context) {
 	}
 
 	idParam := ctx.Params.ByName("id")
-	id_uuid, _ := uuid.Parse(idParam)
+	id_user, _ := uuid.Parse(idParam)
+	id_blog, _ := uuid.Parse(blog_update.Blog_id)
 	if idParam == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "missing id"})
 	}
 
-	editblog, err := config.ClientConfig.Blog.UpdateOneID(id_uuid).
+	editblog, err := config.ClientConfig.Blog.Update().Where(blog.IDEQ(id_blog), blog.UserID(id_user)).
 		SetContent(blog_update.Content).
 		Save(context.Background())
 
@@ -93,24 +96,59 @@ func UpdateBlog(ctx *gin.Context) {
 }
 
 func DeleteBlog(ctx *gin.Context) {
+	var blog_delete models.DeleteBlogRequest
+
+	if err := ctx.BindJSON(&blog_delete); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error:": err.Error})
+		fmt.Println(err)
+		return
+	}
 	idParam := ctx.Params.ByName("id")
-	id_uuid, _ := uuid.Parse(idParam)
 	if idParam == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "missing id"})
 	}
+	id_user, _ := uuid.Parse(idParam)
 
-	err := config.ClientConfig.Blog.
-		DeleteOneID(id_uuid).
+	id_blog, _ := uuid.Parse(blog_delete.Blog_id)
+
+
+	res, err := config.ClientConfig.Blog.
+		Delete().Where(blog.IDEQ(id_blog), blog.UserIDEQ(id_user)).
 		Exec(context.Background())
 
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error:": err.Error})
+	if err != nil || res == 0 {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error:": "Error Found"})
 		fmt.Println(err)
 		return
 	} else {
 		ctx.JSON(http.StatusOK, gin.H{
 			"status":  "ok",
 			"message": "Deletion-success",
+			"data":    res,
+		})
+	}
+
+}
+
+func UsersBlog(ctx *gin.Context) {
+	idParam := ctx.Params.ByName("id")
+	id_uuid, _ := uuid.Parse(idParam)
+	if idParam == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "missing id"})
+	}
+
+	readBlog, err := config.ClientConfig.Blog.Query().Where(blog.UserID(id_uuid)).All(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "error",
+			"message": fmt.Sprint(err),
+			"data":    nil,
+		})
+	} else {
+		ctx.JSON(http.StatusOK, gin.H{
+			"status":  "ok",
+			"message": "success",
+			"data":    readBlog,
 		})
 	}
 

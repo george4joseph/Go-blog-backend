@@ -2,7 +2,61 @@
 
 package runtime
 
-// The schema-stitching logic is generated in github.com/george4joseph/go-blog-backend/ent/runtime.go
+import (
+	"context"
+	"time"
+
+	"github.com/george4joseph/go-blog-backend/ent/blog"
+	"github.com/george4joseph/go-blog-backend/ent/schema"
+	"github.com/george4joseph/go-blog-backend/ent/user"
+	"github.com/google/uuid"
+
+	"entgo.io/ent"
+	"entgo.io/ent/privacy"
+)
+
+// The init function reads all schema descriptors with runtime code
+// (default values, validators, hooks and policies) and stitches it
+// to their package variables.
+func init() {
+	blogFields := schema.Blog{}.Fields()
+	_ = blogFields
+	// blogDescCreatedAt is the schema descriptor for created_at field.
+	blogDescCreatedAt := blogFields[3].Descriptor()
+	// blog.DefaultCreatedAt holds the default value on creation for the created_at field.
+	blog.DefaultCreatedAt = blogDescCreatedAt.Default.(func() time.Time)
+	// blogDescID is the schema descriptor for id field.
+	blogDescID := blogFields[0].Descriptor()
+	// blog.DefaultID holds the default value on creation for the id field.
+	blog.DefaultID = blogDescID.Default.(func() uuid.UUID)
+	user.Policy = privacy.NewPolicies(schema.User{})
+	user.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := user.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	userFields := schema.User{}.Fields()
+	_ = userFields
+	// userDescName is the schema descriptor for name field.
+	userDescName := userFields[1].Descriptor()
+	// user.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	user.NameValidator = userDescName.Validators[0].(func(string) error)
+	// userDescCreatedAt is the schema descriptor for created_at field.
+	userDescCreatedAt := userFields[2].Descriptor()
+	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
+	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
+	// userDescEmail is the schema descriptor for email field.
+	userDescEmail := userFields[3].Descriptor()
+	// user.EmailValidator is a validator for the "email" field. It is called by the builders before save.
+	user.EmailValidator = userDescEmail.Validators[0].(func(string) error)
+	// userDescID is the schema descriptor for id field.
+	userDescID := userFields[0].Descriptor()
+	// user.DefaultID holds the default value on creation for the id field.
+	user.DefaultID = userDescID.Default.(func() uuid.UUID)
+}
 
 const (
 	Version = "v0.11.5"                                         // Version of ent codegen.

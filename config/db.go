@@ -20,8 +20,10 @@ func NewEntClient() {
 
 	fmt.Println("Connected to database successfully")
 	// AutoMigration with ENT
-	if err := Client.Schema.Create(context.Background()); err != nil {
+	c := context.Background()
+	if err := Client.Schema.Create(c); err != nil {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
+
 	ClientConfig = Client
 }
