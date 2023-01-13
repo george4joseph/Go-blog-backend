@@ -70,9 +70,10 @@ func UpdateBlog(ctx *gin.Context) {
 		return
 	}
 
-	idParam := ctx.Params.ByName("id")
+	idParam := ctx.Params.ByName("id_user")
 	id_user, _ := uuid.Parse(idParam)
-	id_blog, _ := uuid.Parse(blog_update.Blog_id)
+	idb := ctx.Params.ByName("id")
+	id_blog, _ := uuid.Parse(idb)
 	if idParam == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "missing id"})
 	}
@@ -110,7 +111,6 @@ func DeleteBlog(ctx *gin.Context) {
 	id_user, _ := uuid.Parse(idParam)
 
 	id_blog, _ := uuid.Parse(blog_delete.Blog_id)
-
 
 	res, err := config.ClientConfig.Blog.
 		Delete().Where(blog.IDEQ(id_blog), blog.UserIDEQ(id_user)).

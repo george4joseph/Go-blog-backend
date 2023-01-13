@@ -21,6 +21,7 @@ func (User) Fields() []ent.Field {
 		field.String("name").MaxLen(250),
 		field.Time("created_at").Default(time.Now),
 		field.String("email").Match(regexp.MustCompile(`[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+`)).Unique(),
+		field.Enum("user_type").GoType(UserType("")),
 	}
 }
 
@@ -28,4 +29,21 @@ func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("blogs", Blog.Type),
 	}
+}
+
+type ( 
+	UserType string
+)
+
+const (
+	User_ UserType = "USER"
+	Admin UserType = "ADMIN"
+)
+
+func (UserType) Values() (kinds []string) {
+	for _, s := range []UserType{User_, Admin} {
+		kinds = append(kinds, string(s))
+	}
+
+	return
 }

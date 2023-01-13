@@ -3,9 +3,10 @@
 package user
 
 import (
+	"fmt"
 	"time"
 
-	"entgo.io/ent"
+	"github.com/george4joseph/go-blog-backend/ent/schema"
 	"github.com/google/uuid"
 )
 
@@ -20,6 +21,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
+	// FieldUserType holds the string denoting the user_type field in the database.
+	FieldUserType = "user_type"
 	// EdgeBlogs holds the string denoting the blogs edge name in mutations.
 	EdgeBlogs = "blogs"
 	// Table holds the table name of the user in the database.
@@ -39,6 +42,7 @@ var Columns = []string{
 	FieldName,
 	FieldCreatedAt,
 	FieldEmail,
+	FieldUserType,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -51,14 +55,7 @@ func ValidColumn(column string) bool {
 	return false
 }
 
-// Note that the variables below are initialized by the runtime
-// package on the initialization of the application. Therefore,
-// it should be imported in the main as follows:
-//
-//	import _ "github.com/george4joseph/go-blog-backend/ent/runtime"
 var (
-	Hooks  [1]ent.Hook
-	Policy ent.Policy
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
@@ -68,3 +65,13 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// UserTypeValidator is a validator for the "user_type" field enum values. It is called by the builders before save.
+func UserTypeValidator(ut schema.UserType) error {
+	switch ut {
+	case "USER", "ADMIN":
+		return nil
+	default:
+		return fmt.Errorf("user: invalid enum value for user_type field: %q", ut)
+	}
+}

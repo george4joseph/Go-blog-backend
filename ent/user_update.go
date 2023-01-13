@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/george4joseph/go-blog-backend/ent/blog"
 	"github.com/george4joseph/go-blog-backend/ent/predicate"
+	"github.com/george4joseph/go-blog-backend/ent/schema"
 	"github.com/george4joseph/go-blog-backend/ent/user"
 	"github.com/google/uuid"
 )
@@ -53,6 +54,12 @@ func (uu *UserUpdate) SetNillableCreatedAt(t *time.Time) *UserUpdate {
 // SetEmail sets the "email" field.
 func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
 	uu.mutation.SetEmail(s)
+	return uu
+}
+
+// SetUserType sets the "user_type" field.
+func (uu *UserUpdate) SetUserType(st schema.UserType) *UserUpdate {
+	uu.mutation.SetUserType(st)
 	return uu
 }
 
@@ -136,6 +143,11 @@ func (uu *UserUpdate) check() error {
 			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "User.email": %w`, err)}
 		}
 	}
+	if v, ok := uu.mutation.UserType(); ok {
+		if err := user.UserTypeValidator(v); err != nil {
+			return &ValidationError{Name: "user_type", err: fmt.Errorf(`ent: validator failed for field "User.user_type": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -168,6 +180,9 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.UserType(); ok {
+		_spec.SetField(user.FieldUserType, field.TypeEnum, value)
 	}
 	if uu.mutation.BlogsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -269,6 +284,12 @@ func (uuo *UserUpdateOne) SetEmail(s string) *UserUpdateOne {
 	return uuo
 }
 
+// SetUserType sets the "user_type" field.
+func (uuo *UserUpdateOne) SetUserType(st schema.UserType) *UserUpdateOne {
+	uuo.mutation.SetUserType(st)
+	return uuo
+}
+
 // AddBlogIDs adds the "blogs" edge to the Blog entity by IDs.
 func (uuo *UserUpdateOne) AddBlogIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.AddBlogIDs(ids...)
@@ -356,6 +377,11 @@ func (uuo *UserUpdateOne) check() error {
 			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "User.email": %w`, err)}
 		}
 	}
+	if v, ok := uuo.mutation.UserType(); ok {
+		if err := user.UserTypeValidator(v); err != nil {
+			return &ValidationError{Name: "user_type", err: fmt.Errorf(`ent: validator failed for field "User.user_type": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -405,6 +431,9 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.UserType(); ok {
+		_spec.SetField(user.FieldUserType, field.TypeEnum, value)
 	}
 	if uuo.mutation.BlogsCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/george4joseph/go-blog-backend/ent/schema"
 	"github.com/george4joseph/go-blog-backend/ent/user"
 	"github.com/google/uuid"
 )
@@ -23,6 +24,8 @@ type User struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Email holds the value of the "email" field.
 	Email string `json:"email,omitempty"`
+	// UserType holds the value of the "user_type" field.
+	UserType schema.UserType `json:"user_type,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges UserEdges `json:"edges"`
@@ -51,7 +54,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldName, user.FieldEmail:
+		case user.FieldName, user.FieldEmail, user.FieldUserType:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -96,6 +99,12 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.Email = value.String
 			}
+		case user.FieldUserType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field user_type", values[i])
+			} else if value.Valid {
+				u.UserType = schema.UserType(value.String)
+			}
 		}
 	}
 	return nil
@@ -137,6 +146,9 @@ func (u *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("email=")
 	builder.WriteString(u.Email)
+	builder.WriteString(", ")
+	builder.WriteString("user_type=")
+	builder.WriteString(fmt.Sprintf("%v", u.UserType))
 	builder.WriteByte(')')
 	return builder.String()
 }

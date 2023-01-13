@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/george4joseph/go-blog-backend/ent/predicate"
+	"github.com/george4joseph/go-blog-backend/ent/schema"
 	"github.com/google/uuid"
 )
 
@@ -239,6 +240,36 @@ func EmailEqualFold(v string) predicate.User {
 // EmailContainsFold applies the ContainsFold predicate on the "email" field.
 func EmailContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldEmail, v))
+}
+
+// UserTypeEQ applies the EQ predicate on the "user_type" field.
+func UserTypeEQ(v schema.UserType) predicate.User {
+	vc := v
+	return predicate.User(sql.FieldEQ(FieldUserType, vc))
+}
+
+// UserTypeNEQ applies the NEQ predicate on the "user_type" field.
+func UserTypeNEQ(v schema.UserType) predicate.User {
+	vc := v
+	return predicate.User(sql.FieldNEQ(FieldUserType, vc))
+}
+
+// UserTypeIn applies the In predicate on the "user_type" field.
+func UserTypeIn(vs ...schema.UserType) predicate.User {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(sql.FieldIn(FieldUserType, v...))
+}
+
+// UserTypeNotIn applies the NotIn predicate on the "user_type" field.
+func UserTypeNotIn(vs ...schema.UserType) predicate.User {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(sql.FieldNotIn(FieldUserType, v...))
 }
 
 // HasBlogs applies the HasEdge predicate on the "blogs" edge.

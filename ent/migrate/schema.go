@@ -36,6 +36,7 @@ var (
 		{Name: "name", Type: field.TypeString, Size: 250},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "email", Type: field.TypeString, Unique: true},
+		{Name: "user_type", Type: field.TypeEnum, Enums: []string{"USER", "ADMIN"}},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{

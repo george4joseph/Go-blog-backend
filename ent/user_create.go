@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/george4joseph/go-blog-backend/ent/blog"
+	"github.com/george4joseph/go-blog-backend/ent/schema"
 	"github.com/george4joseph/go-blog-backend/ent/user"
 	"github.com/google/uuid"
 )
@@ -45,6 +46,12 @@ func (uc *UserCreate) SetNillableCreatedAt(t *time.Time) *UserCreate {
 // SetEmail sets the "email" field.
 func (uc *UserCreate) SetEmail(s string) *UserCreate {
 	uc.mutation.SetEmail(s)
+	return uc
+}
+
+// SetUserType sets the "user_type" field.
+func (uc *UserCreate) SetUserType(st schema.UserType) *UserCreate {
+	uc.mutation.SetUserType(st)
 	return uc
 }
 
@@ -84,9 +91,7 @@ func (uc *UserCreate) Mutation() *UserMutation {
 
 // Save creates the User in the database.
 func (uc *UserCreate) Save(ctx context.Context) (*User, error) {
-	if err := uc.defaults(); err != nil {
-		return nil, err
-	}
+	uc.defaults()
 	return withHooks[*User, UserMutation](ctx, uc.sqlSave, uc.mutation, uc.hooks)
 }
 
@@ -113,22 +118,15 @@ func (uc *UserCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (uc *UserCreate) defaults() error {
+func (uc *UserCreate) defaults() {
 	if _, ok := uc.mutation.CreatedAt(); !ok {
-		if user.DefaultCreatedAt == nil {
-			return fmt.Errorf("ent: uninitialized user.DefaultCreatedAt (forgotten import ent/runtime?)")
-		}
 		v := user.DefaultCreatedAt()
 		uc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := uc.mutation.ID(); !ok {
-		if user.DefaultID == nil {
-			return fmt.Errorf("ent: uninitialized user.DefaultID (forgotten import ent/runtime?)")
-		}
 		v := user.DefaultID()
 		uc.mutation.SetID(v)
 	}
-	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -150,6 +148,14 @@ func (uc *UserCreate) check() error {
 	if v, ok := uc.mutation.Email(); ok {
 		if err := user.EmailValidator(v); err != nil {
 			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "User.email": %w`, err)}
+		}
+	}
+	if _, ok := uc.mutation.UserType(); !ok {
+		return &ValidationError{Name: "user_type", err: errors.New(`ent: missing required field "User.user_type"`)}
+	}
+	if v, ok := uc.mutation.UserType(); ok {
+		if err := user.UserTypeValidator(v); err != nil {
+			return &ValidationError{Name: "user_type", err: fmt.Errorf(`ent: validator failed for field "User.user_type": %w`, err)}
 		}
 	}
 	return nil
@@ -204,6 +210,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 		_node.Email = value
+	}
+	if value, ok := uc.mutation.UserType(); ok {
+		_spec.SetField(user.FieldUserType, field.TypeEnum, value)
+		_node.UserType = value
 	}
 	if nodes := uc.mutation.BlogsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

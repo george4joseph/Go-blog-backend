@@ -10,7 +10,6 @@ import (
 func main() {
 
 	config.NewEntClient()
-	// defer config.ClientConfig.Close()
 
 	router := gin.Default()
 

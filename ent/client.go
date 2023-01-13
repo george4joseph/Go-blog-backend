@@ -393,8 +393,7 @@ func (c *UserClient) QueryBlogs(u *User) *BlogQuery {
 
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
-	hooks := c.hooks.User
-	return append(hooks[:len(hooks):len(hooks)], user.Hooks[:]...)
+	return c.hooks.User
 }
 
 // Interceptors returns the client interceptors.
