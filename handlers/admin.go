@@ -158,7 +158,36 @@ func AdminUpdateBlog(ctx *gin.Context) {
 				"data":    editblog,
 			})
 		}
-
 	}
+}
 
+func AssignAdmin(ctx *gin.Context) {
+	idParam := ctx.Params.ByName("id_admin")
+	if CheckAdmin(idParam, ctx) {
+		idParam := ctx.Params.ByName("id")
+		if idParam == "" {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "missing id"})
+		}
+		idu := ctx.Params.ByName("id")
+		if idu == "" {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "missing id"})
+		}
+		id_user, _ := uuid.Parse(idu)
+
+		addadmin, err := config.ClientConfig.User.UpdateOneID(id_user).
+			SetUserType("ADMIN").
+			Save(context.Background())
+
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error:": err.Error})
+			fmt.Println(err)
+			return
+		} else {
+			ctx.JSON(http.StatusOK, gin.H{
+				"status":  "ok",
+				"message": "Admin Added",
+				"data":    addadmin,
+			})
+		}
+	}
 }

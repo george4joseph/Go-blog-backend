@@ -77,7 +77,9 @@ func UpdateBlog(ctx *gin.Context) {
 	if idParam == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "missing id"})
 	}
-
+	if idb == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "missing id"})
+	}
 	editblog, err := config.ClientConfig.Blog.Update().Where(blog.IDEQ(id_blog), blog.UserID(id_user)).
 		SetContent(blog_update.Content).
 		Save(context.Background())
@@ -97,20 +99,20 @@ func UpdateBlog(ctx *gin.Context) {
 }
 
 func DeleteBlog(ctx *gin.Context) {
-	var blog_delete models.DeleteBlogRequest
 
-	if err := ctx.BindJSON(&blog_delete); err != nil {
+	var blog_del models.DeleteBlogRequest
+
+	if err := ctx.BindJSON(&blog_del); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error:": err.Error})
 		fmt.Println(err)
 		return
 	}
+	id_blog, _ := uuid.Parse(blog_del.Blog_id)
 	idParam := ctx.Params.ByName("id")
 	if idParam == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "missing id"})
 	}
 	id_user, _ := uuid.Parse(idParam)
-
-	id_blog, _ := uuid.Parse(blog_delete.Blog_id)
 
 	res, err := config.ClientConfig.Blog.
 		Delete().Where(blog.IDEQ(id_blog), blog.UserIDEQ(id_user)).
